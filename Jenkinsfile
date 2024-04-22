@@ -1,37 +1,44 @@
+
 pipeline {
     agent any 
-   
     
     stages { 
         stage('SCM Checkout') {
             steps {
                 retry(3) {
-                    git branch: 'main', url: 'https://github.com/HGSChandeepa/test-node'
+                    git branch: 'main', url: 'https://github.com/CPrasa/3827-Aralugaswaththa'
                 }
             }
         }
         stage('Build Docker Image') {
             steps {  
-                bat 'docker build -t adomicarts/nodeapp-cuban:%BUILD_NUMBER% .'
+                script {
+                    bat 'docker build -t crprasad/myapp-cuban:%BUILD_NUMBER% .'
+                }
             }
         }
         stage('Login to Docker Hub') {
             steps {
-                withCredentials([string(credentialsId: 'samin-docker', variable: 'samindocker')]) {
-   
-               bat'docker login -u adomicarts -p ${samindocker}'
+                withCredentials([string(credentialsId: 'dockerhubpassword', variable: 'dockerhub_variable')]) {
+                    script {
+                        bat "docker login -u crprasad -p ${dockerhub_variable}"
+                    }
                 }
             }
         }
         stage('Push Image') {
             steps {
-                bat 'docker push adomicarts/nodeapp-cuban:%BUILD_NUMBER%'
+                script {
+                    bat 'docker push crprasad/myapp-cuban:%BUILD_NUMBER%'
+                }
             }
         }
     }
     post {
         always {
-            bat 'docker logout'
+            script {
+                bat 'docker logout'
+            }
         }
     }
 }
